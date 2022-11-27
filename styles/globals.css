@@ -1,3 +1,5 @@
+@import "toastr";
+
 html,
 body {
   padding: 0;
@@ -13,4 +15,15 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+.d-flex-center {
+  display: flex;
+  justify-content: center;
+}
+
+.d-flex-center-column {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }

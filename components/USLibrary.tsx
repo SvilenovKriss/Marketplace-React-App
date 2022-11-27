@@ -1,19 +1,13 @@
 import type { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
-import useUSElectionContract from "../hooks/useUSElectionContract";
+import useUSElectionContract from "../hooks/useMarketplaceContract";
 
-type USContract = {
+type MarketplaceContract = {
   contractAddress: string;
 };
 
-export enum Leader {
-  UNKNOWN,
-  BIDEN,
-  TRUMP
-}
-
-const USLibrary = ({ contractAddress }: USContract) => {
+const USLibrary = ({ contractAddress }: MarketplaceContract) => {
   const { account, library } = useWeb3React<Web3Provider>();
   const usElectionContract = useUSElectionContract(contractAddress);
   const [currentLeader, setCurrentLeader] = useState<string>('Unknown');
@@ -28,7 +22,6 @@ const USLibrary = ({ contractAddress }: USContract) => {
 
   const getCurrentLeader = async () => {
     const currentLeader = await usElectionContract.currentLeader();
-    setCurrentLeader(currentLeader == Leader.UNKNOWN ? 'Unknown' : currentLeader == Leader.BIDEN ? 'Biden' : 'Trump')
   }
 
   const stateInput = (input) => {
@@ -63,42 +56,6 @@ const USLibrary = ({ contractAddress }: USContract) => {
 
   return (
     <div className="results-form">
-    <p>
-      Current Leader is: {currentLeader}
-    </p>
-    <form>
-      <label>
-        State:
-        <input onChange={stateInput} value={name} type="text" name="state" />
-      </label>
-      <label>
-        BIDEN Votes:
-        <input onChange={bideVotesInput} value={votesBiden} type="number" name="biden_votes" />
-      </label>
-      <label>
-        TRUMP Votes:
-        <input onChange={trumpVotesInput} value={votesTrump} type="number" name="trump_votes" />
-      </label>
-      <label>
-        Seats:
-        <input onChange={seatsInput} value={stateSeats} type="number" name="seats" />
-      </label>
-      {/* <input type="submit" value="Submit" /> */}
-    </form>
-    <div className="button-wrapper">
-      <button onClick={submitStateResults}>Submit Results</button>
-    </div>
-    <style jsx>{`
-        .results-form {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .button-wrapper {
-          margin: 20px;
-        }
-        
-      `}</style>
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import { useWeb3React } from "@web3-react/core";
 import { UserRejectedRequestError } from "@web3-react/injected-connector";
 import { useEffect, useState } from "react";
+import Button from '@mui/material/Button';
+
 import { injected, walletConnect } from "../connectors";
 import useENSName from "../hooks/useENSName";
 import useMetaMaskOnboarding from "../hooks/useMetaMaskOnboarding";
@@ -44,7 +46,9 @@ const Account = ({ triedToEagerConnect }: AccountProps) => {
     return (
       <div>
         {isWeb3Available ? (
-          <button
+          <Button
+            variant="contained"
+            style={{ marginRight: '10px' }}
             disabled={connecting}
             onClick={() => {
               setConnecting(true);
@@ -60,26 +64,27 @@ const Account = ({ triedToEagerConnect }: AccountProps) => {
             }}
           >
             {isMetaMaskInstalled ? "Connect to MetaMask" : "Connect to Wallet"}
-          </button>
-          
+          </Button>
+
         ) : (
-          <button onClick={startOnboarding}>Install Metamask</button>
+          <Button variant="contained" onClick={startOnboarding}>Install Metamask</Button >
         )}
-        {(<button
-            disabled={connecting}
-            onClick={async () => {
-              try {
-                await activate(walletConnect(), undefined, true)
-              } catch (e) {
-                if (error instanceof UserRejectedRequestError) {
-                  setConnecting(false);
-                } else {
-                  setError(error);
-                }
+        {(<Button
+          variant="contained"
+          disabled={connecting}
+          onClick={async () => {
+            try {
+              await activate(walletConnect(), undefined, true)
+            } catch (e) {
+              if (error instanceof UserRejectedRequestError) {
+                setConnecting(false);
+              } else {
+                setError(error);
               }
-            }}>
-            Wallet Connect
-          </button>)
+            }
+          }}>
+          Wallet Connect
+        </Button>)
         }
       </div>
     );
@@ -87,28 +92,30 @@ const Account = ({ triedToEagerConnect }: AccountProps) => {
 
   return (
     <>
-        <a
-      {...{
-        href: formatEtherscanLink("Account", [chainId, account]),
-        target: "_blank",
-        rel: "noopener noreferrer",
-      }}
-    >
-      {ENSName || `${shortenHex(account, 4)}`}
-    </a>
-    <button
-          onClick={async () => {
-            try {
-              await deactivate()
-            } catch (e) { 
-              setError(error);
-            }
-          }}>
-          Disconnect
-        </button>
+      <a
+        {...{
+          href: formatEtherscanLink("Account", [chainId, account]),
+          target: "_blank",
+          rel: "noopener noreferrer",
+        }}
+        style={{ marginRight: '50px' }}
+      >
+        {ENSName || `${shortenHex(account, 4)}`}
+      </a>
+      <Button
+        variant="contained"
+        onClick={async () => {
+          try {
+            await deactivate()
+          } catch (e) {
+            setError(error);
+          }
+        }}>
+        Disconnect
+      </Button>
     </>
-   
-    
+
+
   );
 };
 

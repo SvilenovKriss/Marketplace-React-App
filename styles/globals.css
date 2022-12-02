@@ -55,3 +55,18 @@ a {
   position: fixed;
   top: 50%;
 }
+
+a:hover {
+  color: blue;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+.d-flex-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pointer {
+  cursor: pointer;
+}

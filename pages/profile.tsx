@@ -43,6 +43,8 @@ const Profile = () => {
             const contract = await allCollections[index].collection;
             const collectionName = allCollections[index].name;
             const tokensLength = (await contract.tokenId())?.toString();
+            console.log('tokensLength', tokensLength);
+            
 
             for (let tokenId = 1; tokenId <= tokensLength; tokenId++) {
                 const address = await contract.ownerOf(tokenId);
@@ -52,9 +54,6 @@ const Profile = () => {
                     const token = await contract.tokenURI(tokenId);
                     const collectionOwner = await contract.owner();
                     const { status, data } = await axios.get(token);
-
-                    console.log(price.toString());
-
 
                     if (status === 200) {
                         tokenArr.push({
@@ -93,12 +92,6 @@ const Profile = () => {
 
                 const isApproved = await contract.getApproved(tokenId);
                 const isApprovedForAll = await contract.isApprovedForAll(account, marketplaceContract.address);
-
-                console.log('isApproved: ', isApproved);
-                console.log('isApprovedForAll: ', isApprovedForAll);
-
-                console.log(tokens[index]);
-
 
                 if (/^0x0+$/.test(isApproved) && !isApprovedForAll) {
                     await (await contract.approve(marketplaceContract.address, tokenId)).wait();

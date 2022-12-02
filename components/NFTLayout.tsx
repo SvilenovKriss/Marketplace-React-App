@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Box } from '@mui/material/';
-import { formatEtherscanLink, shortenHex } from "../util";
+import { shortenHex } from "../util";
 import { useRouter } from 'next/router';
 
 const NFTLayout = ({ src, name, description, owner, collectionName, collectionAddress = null }) => {
@@ -15,12 +15,10 @@ const NFTLayout = ({ src, name, description, owner, collectionName, collectionAd
                     <span>{description}</span>
                 </div>
                 <div className="d-flex-column" style={{ paddingTop: '10px' }}>
-                    <span>{shortenHex(owner, 4)}</span>
+                    <a className='pointer' onClick={() => { router.push(`/user/${owner}`) }}>{shortenHex(owner, 4)}</a>
                     {
                         collectionAddress ?
-                            <span style={{ cursor: 'pointer' }} onClick={() => { router.push(`/collection/${owner}/${collectionAddress}`) }}>
-                                <a href="javascript:void(0)">{collectionName} </a>
-                            </span>
+                            <a className='pointer' onClick={() => { router.push(`/collection/${owner}/${collectionAddress}`) }} href="javascript:void(0)">{collectionName}</a>
                             :
                             <span>
                                 {collectionName}

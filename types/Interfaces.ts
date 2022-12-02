@@ -20,5 +20,6 @@ export interface NFTMetadata {
     collectionIndex: number;
     isListed: boolean;
     price: number;
+    itemIndex?: number;
     tokenId: number;
 }

@@ -12,18 +12,19 @@ import useMarketplaceContract from "../../../hooks/useMarketplaceContract";
 import useUserCollections from "../../../hooks/useUserCollections";
 import { NFTMetadata } from "../../../types/Interfaces";
 import NFT_ABI from "../../../contracts/NFT.json";
+import { parseBalance } from "../../../util";
 
-const CollectionPage = (asd) => {
+const CollectionPage = () => {
     const { library, account } = useWeb3React();
     const marketplaceContract = useMarketplaceContract(MARKETPLACE_ADDRESS);
-    const { collectionContracts, isCollectionsFetched, fetchCollections } = useUserCollections();
+    const { isCollectionsFetched, fetchCollections } = useUserCollections();
     const router = useRouter();
     const { collectionAddress, userAddress } = router.query;
     const [tokens, setTokens] = useState<NFTMetadata[]>([]);
     const [isLoading, setLoading] = useState(false);
 
     useEffect(() => {
-        // setLoading(true);
+        setLoading(true);
 
         const fetch = async () => {
             await fetchCollections(userAddress, collectionAddress?.toString());
@@ -41,9 +42,11 @@ const CollectionPage = (asd) => {
         const tokensLength = (await contract.tokenId())?.toString();
 
         for (let tokenId = 1; tokenId <= tokensLength; tokenId++) {
-            const { isListed, price } = await marketplaceContract.listedItemStatus(contract.address, tokenId);
+            const { isListed, price, index } = await marketplaceContract.listedItemStatus(contract.address, tokenId);
+            
             const token = await contract.tokenURI(tokenId);
             const collectionOwner = await contract.owner();
+            const owner = await contract.ownerOf(tokenId);
             const { status, data } = await axios.get(token);
 
             if (status === 200) {
@@ -52,23 +55,21 @@ const CollectionPage = (asd) => {
                     collectionName,
                     isListed,
                     price,
-                    collectionAddress: contract.address,
+                    itemAddress: contract.address,
                     collectionOwner,
-                    tokenId
+                    tokenId,
+                    owner,
+                    itemIndex: index?.toString()
                 });
             }
         }
-
-        //TODO: IF ITEM IS LISTED, SHOW BUY BUTTON, IF NOT, DONT.
-        //TODO: CREATE THE PAGE BY USER AND SEE HOW TO REUSE THIS FUNCTIONALITY.
-        //TODO: CREATE MAKE OFFER, CANCEL AND APPROVE.
 
         setTokens(tokenArr);
         setLoading(false);
     }
 
-    const buyToken = async (e, itemIndex) => {
-        const { price, owner, tokenId, itemAddress } = tokens[itemIndex];
+    const buyToken = async (e, index) => {
+        const { price, owner, tokenId, itemAddress, itemIndex } = tokens[index];
 
         try {
             setLoading(true);
@@ -81,7 +82,7 @@ const CollectionPage = (asd) => {
                 for (let i = 0; i < totalExternalTokens; i++) {
                     const externalToken = await marketplaceContract?.userBoughtTokens(owner, i);
 
-                    if (externalToken.tokenId.toString() == tokenId && collectionAddress == itemAddress) {
+                    if (externalToken.tokenId.toString() == tokenId && externalToken.collectionAddress == itemAddress) {
                         externalTokenIndex = i;
                         break;
                     }
@@ -91,10 +92,11 @@ const CollectionPage = (asd) => {
             await (await marketplaceContract.buyItem(itemIndex, externalTokenIndex, { value: price })).wait();
             await fetchTokens();
 
-            setLoading(false);
         } catch (error) {
             toastr.error(error.message);
         }
+
+        setLoading(false);
     }
 
     return (
@@ -106,18 +108,27 @@ const CollectionPage = (asd) => {
             <div style={{ display: 'flex', flexFlow: 'row wrap' }}>
                 {tokens.map((token, index) => {
                     return (
-                        <div key={index + 1}>
+                        <div style={{ cursor: 'pointer' }} key={index + 1}>
                             <NFTLayout
                                 src={token.image}
                                 key={index}
                                 name={token.name}
                                 description={token.description}
-                                owner={account}
+                                owner={token.owner}
                                 collectionName={token.collectionName}
                             />
                             {
                                 token.isListed ?
-                                    <Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button> : ''
+                                    token.owner === account ?
+                                        <div className="d-flex-space-between">
+                                            <Button style={{ marginLeft: '20px' }} disabled onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
+                                            <span style={{ marginRight: '20px' }}>Price: {parseBalance(token.price, 18, 2)}</span>
+                                        </div> :
+                                        <div className="d-flex-space-between">
+                                            <Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
+                                            <span style={{ marginRight: '20px' }}>Price: {parseBalance(token.price, 18, 2)}</span>
+                                        </div>
+                                    : ''
                             }
                         </div>)
                 })}

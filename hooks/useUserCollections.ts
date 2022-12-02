@@ -44,6 +44,7 @@ export default function useUserCollections() {
 
     const fetchAllCollections = async (address) => {
         try {
+            //OWN COLLECTIONS.
             const collectionsLength = (await marketplaceContract?.getUserCollectionTotal(address))?.toString();
             const collections = [];
 
@@ -54,19 +55,27 @@ export default function useUserCollections() {
                 collections.push({ collection: _collection, name: await _collection.name(), address: _collection.address, index });
             }
 
+            //TOKENS FROM EXTERNAL COLLECTIONS.
             const userBoughtTokensLength = (await marketplaceContract?.getTotalBoughtTokens(address))?.toString();
 
             for (let index = 0; index < userBoughtTokensLength; index++) {
                 const { collectionAddress } = await marketplaceContract?.userBoughtTokens(address, index);
                 const _collection = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
                 const collectionOwner = await _collection.owner();
+                const userCollectionsLength = (await marketplaceContract?.getUserCollectionTotal(collectionOwner))?.toString();
 
-                for (let index = 1; index <= collectionsLength; index++) {
+                for (let index = 1; index <= userCollectionsLength; index++) {
                     const externalTokenAddress = await marketplaceContract?.getCollection(collectionOwner, index);
 
                     if (collectionAddress === externalTokenAddress) {
-                        const _collection = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
+                        const contractIndex = collections.findIndex((_coll) => _coll.address === externalTokenAddress)
 
+                        //CHECKING IF I'VE ALREADY ADDED COLLECTION TO ARR.
+                        if (contractIndex >= 0) {
+                            break;
+                        }
+
+                        const _collection = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
                         collections.push({ collection: _collection, name: await _collection.name(), address: _collection.address, index });
 
                         break;

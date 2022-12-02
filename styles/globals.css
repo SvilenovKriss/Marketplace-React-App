@@ -22,8 +22,36 @@ a {
   justify-content: center;
 }
 
+.d-flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
 .d-flex-center-column {
   display: flex;
   align-items: center;
   flex-direction: column;
+}
+
+.nft-layout-box {
+  margin: 20px;
+  width: 240px;
+  height: 300px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(229, 232, 235);
+}
+
+.nft-img {
+  height: 60%;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.position-center {
+  width: 40px;
+  height: 40px;
+  position: fixed;
+  top: 50%;
 }

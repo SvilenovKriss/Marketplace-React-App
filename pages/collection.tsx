@@ -24,11 +24,11 @@ const Collection = () => {
 
                 await createCollectionTx.wait();
 
-                const collectionsLength = (await marketplaceContract?.getUserCollectionTotal())?.toString();
-                const collectionAddress = await marketplaceContract?.getCollection(collectionsLength);
+                const lastCreatedCollectionIndex = (await marketplaceContract?.getUserCollectionTotal(account))?.toString();
+                const collectionAddress = await marketplaceContract?.getCollection(account, lastCreatedCollectionIndex);
                 const _collection = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
 
-                await _collection.setApprovalForAll(MARKETPLACE_ADDRESS, true);
+                await (await _collection.setApprovalForAll(MARKETPLACE_ADDRESS, true)).wait();
 
                 toastr.success('Collection created!');
             } catch (err) {
@@ -44,7 +44,7 @@ const Collection = () => {
 
     return (
         <Box className="d-flex-center-column">
-            {isLoading ? <CircularProgress style={{ position: 'absolute', top: '330px' }} /> : ''}
+            {isLoading ? <CircularProgress className="position-center" /> : ''}
             <h1>Create collection</h1>
             <br />
             <TextField

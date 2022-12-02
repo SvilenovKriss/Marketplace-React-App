@@ -37,14 +37,8 @@
         "type": "error"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            }
-        ],
-        "name": "ItemAlreadyListed",
+        "inputs": [],
+        "name": "IndexDoesNotExist",
         "type": "error"
     },
     {
@@ -55,7 +49,7 @@
                 "type": "uint256"
             }
         ],
-        "name": "ItemNotListed",
+        "name": "ItemAlreadyListed",
         "type": "error"
     },
     {
@@ -331,18 +325,13 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "collectionOwner",
-                "type": "address"
-            },
-            {
                 "internalType": "uint256",
-                "name": "collectionIndex",
+                "name": "item",
                 "type": "uint256"
             },
             {
                 "internalType": "uint256",
-                "name": "tokenId",
+                "name": "indexOfBoughtToken",
                 "type": "uint256"
             }
         ],
@@ -400,6 +389,11 @@
     {
         "inputs": [
             {
+                "internalType": "address",
+                "name": "_addr",
+                "type": "address"
+            },
+            {
                 "internalType": "uint256",
                 "name": "index",
                 "type": "uint256"
@@ -417,7 +411,69 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_addr",
+                "type": "address"
+            }
+        ],
+        "name": "getTotalBoughtTokens",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [],
+        "name": "getTotalListedItems",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "contract Collection",
+                "name": "_collection",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getTotalOffersByToken",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_addr",
+                "type": "address"
+            }
+        ],
         "name": "getUserCollectionTotal",
         "outputs": [
             {
@@ -483,11 +539,45 @@
                 "type": "uint256"
             }
         ],
-        "name": "listedItems",
+        "name": "listedItemStatus",
         "outputs": [
+            {
+                "internalType": "bool",
+                "name": "isListed",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
             {
                 "internalType": "uint256",
                 "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "listedItems",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "collectionAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "price",
                 "type": "uint256"
             }
         ],
@@ -582,6 +672,35 @@
         "name": "transferOwnership",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "userBoughtTokens",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "collectionAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {

@@ -15,49 +15,29 @@ import {
 } from '@mui/material';
 import toastr from 'toastr';
 
-import { MARKETPLACE_ADDRESS } from "../constants";
-import useMarketplaceContract from "../hooks/useMarketplaceContract";
-import NFT_ABI from "../contracts/NFT.json";
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
+import useUserCollections from "../hooks/useUserCollections";
 
 const Mint = () => {
-    const { library, account, chainId } = useWeb3React();
-    const marketplaceContract = useMarketplaceContract(MARKETPLACE_ADDRESS);
+    const { account } = useWeb3React();
     const [isLoading, setLoading] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [collection, setCollection] = useState('');
     const [image, setImage] = useState<any>();
-    const [collectionContracts, setCollectionContracts] = useState([]);
-    const [userCollections, setUserCollections] = useState([]);
+    const { collectionContracts, fetchCollections } = useUserCollections();
 
     useEffect(() => {
-        const callFetchCollections = async () => {
-            await fetchCollections();
+        setLoading(true);
+
+        const fetch = async () => {
+            await fetchCollections(account);
+
+            setLoading(false);
         }
 
-        callFetchCollections();
-    }, []);
-
-    const fetchCollections = async () => {
-        const collectionsLength = (await marketplaceContract?.getUserCollectionTotal())?.toString();
-        const collections = [];
-        const collectionNames = [];
-        for (let i = 1; i <= collectionsLength; i++) {
-            try {
-                const collectionAddress = await marketplaceContract?.getCollection(i);
-                const _collection = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
-
-                collectionNames.push({ name: await _collection.name(), address: _collection.address });
-                collections.push(_collection);
-            } catch (err) {
-                toastr.error(err.message);
-            }
-        }
-
-        setCollectionContracts(collections);
-        setUserCollections(collectionNames);
-    }
+        fetch();
+    }, [account]);
 
     const MintNft = async () => {
         if (!image || !name || !collection) {
@@ -66,31 +46,34 @@ const Mint = () => {
         }
 
         setLoading(true);
+        try {
+            const responseIpfsFile: any = await uploadFileToIPFS(image);
 
-        const responseIpfsFile: any = await uploadFileToIPFS(image);
+            if (!responseIpfsFile?.success) {
+                toastr.error(responseIpfsFile?.message);
+                return;
+            }
 
-        if (!responseIpfsFile?.success) {
-            toastr.error(responseIpfsFile?.message);
-            return;
+            const responseIpfsJson: any = await uploadJSONToIPFS({ image: responseIpfsFile?.pinataURL, name, description });
+
+            if (!responseIpfsJson?.success) {
+                toastr.error((responseIpfsJson as any)?.message);
+                return;
+            }
+
+            const contract = collectionContracts.find((collectionContract) => collectionContract?.collection.address == collection);
+
+            const tx = await contract.collection.mint(responseIpfsJson.pinataURL);
+            await tx.wait();
+
+            setLoading(false);
+            setImage('');
+            setDescription('');
+            setName('');
+            setCollection('');
+        } catch (error) {
+            toastr.warning(error.message)
         }
-
-        const responseIpfsJson: any = await uploadJSONToIPFS({ image: responseIpfsFile?.pinataURL, name, description });
-
-        if (!responseIpfsJson?.success) {
-            toastr.error((responseIpfsJson as any)?.message);
-            return;
-        }
-
-        const contract = collectionContracts.find((collectionContract) => collectionContract.address == collection);
-
-        const tx = await contract.mint(responseIpfsJson.pinataURL);
-        await tx.wait();
-
-        setLoading(false);
-        setImage('');
-        setDescription('');
-        setName('');
-        setCollection('');
     }
 
     const handleChange = (event: SelectChangeEvent) => {
@@ -99,7 +82,7 @@ const Mint = () => {
 
     return (
         <Box className="d-flex-center-column">
-            {isLoading ? <CircularProgress style={{ position: 'absolute', top: '330px' }} /> : ''}
+            {isLoading ? <CircularProgress className="position-center" /> : ''}
             <h1>Mint</h1>
             <div style={{ display: 'flex', justifyContent: 'flex-start', width: '430px', margin: '15px 0' }}>
                 {
@@ -134,8 +117,8 @@ const Mint = () => {
                         onChange={handleChange}
                     >
                         {
-                            userCollections.length > 0 ?
-                                userCollections.map((collection, index) => {
+                            collectionContracts.length > 0 ?
+                                collectionContracts.map((collection, index) => {
                                     return <MenuItem key={index} value={collection.address}>{collection.name}</MenuItem>
                                 }) : <MenuItem disabled value="no colletion">No collections!</MenuItem>
                         }

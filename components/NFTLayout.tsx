@@ -1,32 +1,39 @@
 import * as React from 'react';
 import { Box } from '@mui/material/';
-import { shortenHex } from "../util";
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
-const NFTLayout = ({ src, name, description, owner, collectionName, collectionAddress = null }) => {
+import { shortenHex } from "../util";
+
+const NFTLayout = (params) => {
     const router = useRouter();
 
     return (
-        <Box className="nft-layout-box" sx={{ border: '1px dashed grey' }}>
-            <img className="nft-img" src={src} />
-            <div className="d-flex-column" style={{ padding: '10px', height: '40%' }}>
-                <div className="d-flex-column">
-                    <span>{name}</span>
-                    <span>{description}</span>
+        <Link href={{ pathname: "/nft", query: params }}>
+            <Box className="nft-layout-box" sx={{ border: '1px dashed grey' }}>
+                <img className="nft-img" src={params.src} />
+                <div className="d-flex-column" style={{ padding: '10px', height: '40%' }}>
+                    <div className="d-flex-column">
+                        <span>{params.name}</span>
+                        <span>{params.description}</span>
+                    </div>
+                    <div className="d-flex-column" style={{ paddingTop: '10px' }}>
+                        {router.pathname.includes('profile') ?
+                            <a>{shortenHex(params.owner, 4)}</a> :
+                            <a className='pointer link' onClick={() => { router.push(`/user/${params.owner}`) }}>{shortenHex(params.owner, 4)}</a>
+                        }
+                        {
+                            params.collectionAddress ?
+                                <a className='pointer link' onClick={() => { router.push(`/collection/${params.owner}/${params.collectionAddress}`) }} href="javascript:void(0)">{params.collectionName}</a>
+                                :
+                                <span>
+                                    {params.collectionName}
+                                </span>
+                        }
+                    </div>
                 </div>
-                <div className="d-flex-column" style={{ paddingTop: '10px' }}>
-                    <a className='pointer' onClick={() => { router.push(`/user/${owner}`) }}>{shortenHex(owner, 4)}</a>
-                    {
-                        collectionAddress ?
-                            <a className='pointer' onClick={() => { router.push(`/collection/${owner}/${collectionAddress}`) }} href="javascript:void(0)">{collectionName}</a>
-                            :
-                            <span>
-                                {collectionName}
-                            </span>
-                    }
-                </div>
-            </div>
-        </Box>
+            </Box>
+        </Link>
     );
 }
 

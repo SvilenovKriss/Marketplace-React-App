@@ -43,7 +43,7 @@ const CollectionPage = () => {
 
         for (let tokenId = 1; tokenId <= tokensLength; tokenId++) {
             const { isListed, price, index } = await marketplaceContract.listedItemStatus(contract.address, tokenId);
-            
+
             const token = await contract.tokenURI(tokenId);
             const collectionOwner = await contract.owner();
             const owner = await contract.ownerOf(tokenId);
@@ -116,6 +116,7 @@ const CollectionPage = () => {
                                 description={token.description}
                                 owner={token.owner}
                                 collectionName={token.collectionName}
+                                isListed={token.isListed}
                             />
                             {
                                 token.isListed ?

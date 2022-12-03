@@ -27,6 +27,10 @@ a {
   flex-direction: column;
 }
 
+.d-flex {
+  display: flex;
+}
+
 .d-flex-center-column {
   display: flex;
   align-items: center;
@@ -56,7 +60,7 @@ a {
   top: 50%;
 }
 
-a:hover {
+.link:hover {
   color: blue;
   background-color: transparent;
   text-decoration: underline;
@@ -69,4 +73,11 @@ a:hover {
 
 .pointer {
   cursor: pointer;
+}
+
+.item {
+  cursor: pointer;
+  max-height: 1000px;
+  width: 100%;
+  min-height: 200px;
 }

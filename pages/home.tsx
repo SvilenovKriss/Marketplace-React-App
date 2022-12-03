@@ -41,7 +41,16 @@ const Home = () => {
                 const { status, data } = await axios.get(token);
 
                 if (status === 200) {
-                    tokensArr.push({ ...data, price: price.toString(), collectionName, tokenId, owner, itemAddress: collectionAddress });
+                    tokensArr.push({
+                        ...data,
+                        price: price.toString(),
+                        collectionName,
+                        tokenId,
+                        owner,
+                        itemAddress: collectionAddress,
+                        itemIndex: index,
+                        isListed: true
+                    });
                 }
             }
 
@@ -102,6 +111,10 @@ const Home = () => {
                                 owner={token.owner}
                                 collectionName={token.collectionName}
                                 collectionAddress={token.itemAddress}
+                                itemIndex={token.itemIndex}
+                                price={token.price}
+                                tokenId={token.tokenId}
+                                isListed={token.isListed}
                             />
                             {
                                 account !== token.owner ?

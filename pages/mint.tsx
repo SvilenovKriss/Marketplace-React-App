@@ -65,15 +65,15 @@ const Mint = () => {
 
             const tx = await contract.collection.mint(responseIpfsJson.pinataURL);
             await tx.wait();
-
-            setLoading(false);
-            setImage('');
-            setDescription('');
-            setName('');
-            setCollection('');
         } catch (error) {
             toastr.warning(error.message)
         }
+
+        setLoading(false);
+        setImage('');
+        setDescription('');
+        setName('');
+        setCollection('');
     }
 
     const handleChange = (event: SelectChangeEvent) => {

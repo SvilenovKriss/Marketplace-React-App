@@ -13,7 +13,7 @@ import { parseBalance } from "../util";
 import { NFTMetadata } from "../types/Interfaces";
 
 const Home = () => {
-    const { library, account, chainId } = useWeb3React();
+    const { library, account } = useWeb3React();
     const marketplaceContract = useMarketplaceContract(MARKETPLACE_ADDRESS);
     const [tokens, setTokens] = useState<NFTMetadata[]>([]);
     const [isLoading, setLoading] = useState(false);
@@ -35,8 +35,10 @@ const Home = () => {
             for (let index = 0; index < totalListed; index++) {
                 const { collectionAddress, tokenId, price } = await marketplaceContract.listedItems(index);
                 const contract = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
+                
                 const token = await contract.tokenURI(tokenId);
                 const collectionName = await contract.name();
+                const collectionOwner = await contract.owner();
                 const owner = await contract.ownerOf(tokenId);
                 const { status, data } = await axios.get(token);
 
@@ -45,9 +47,10 @@ const Home = () => {
                         ...data,
                         price: price.toString(),
                         collectionName,
-                        tokenId,
+                        tokenId: tokenId.toString(),
                         owner,
                         itemAddress: collectionAddress,
+                        collectionOwner,
                         itemIndex: index,
                         isListed: true
                     });
@@ -111,6 +114,8 @@ const Home = () => {
                                 owner={token.owner}
                                 collectionName={token.collectionName}
                                 collectionAddress={token.itemAddress}
+                                collectionOwner={token.collectionOwner}
+                                collectionIndex={token.collectionIndex}
                                 itemIndex={token.itemIndex}
                                 price={token.price}
                                 tokenId={token.tokenId}
@@ -120,7 +125,7 @@ const Home = () => {
                                 account !== token.owner ?
                                     <div className="d-flex-space-between">
                                         < Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
-                                        <span style={{ marginRight: '20px' }}>Price: {parseBalance(token.price, 18, 2)}</span>
+                                        <span style={{ marginRight: '20px' }}>Price: {token.price ? parseBalance(token.price) : ''}</span>
                                     </div>
                                     : ''
                             }

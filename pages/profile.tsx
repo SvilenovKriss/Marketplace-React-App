@@ -21,6 +21,7 @@ const Profile = () => {
         fetchAllCollections,
     } = useUserCollections();
     const [tokens, setTokens] = useState<NFTMetadata[]>([]);
+    const [contractOwner, setOwner] = useState('');
     const [isLoading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -28,6 +29,8 @@ const Profile = () => {
 
         const fetch = async () => {
             await fetchAllCollections(account);
+
+            setOwner(await marketplaceContract?.owner());
 
             await fetchTokens();
         }
@@ -39,39 +42,42 @@ const Profile = () => {
     const fetchTokens = async () => {
         const tokenArr = [];
 
-        for (let index = 0; index < allCollections.length; index++) {
-            const contract = await allCollections[index].collection;
-            const collectionName = allCollections[index].name;
-            const tokensLength = (await contract.tokenId())?.toString();
-            console.log('tokensLength', tokensLength);
-            
+        try {
+            for (let index = 0; index < allCollections.length; index++) {
+                setLoading(true);
+                const contract = await allCollections[index].collection;
+                const collectionName = allCollections[index].name;
+                const tokensLength = (await contract.tokenId())?.toString();
 
-            for (let tokenId = 1; tokenId <= tokensLength; tokenId++) {
-                const address = await contract.ownerOf(tokenId);
+                for (let tokenId = 1; tokenId <= tokensLength; tokenId++) {
+                    const address = await contract.ownerOf(tokenId);
 
-                if (address == account) {
-                    const { isListed, price } = await marketplaceContract.listedItemStatus(contract.address, tokenId);
-                    const token = await contract.tokenURI(tokenId);
-                    const collectionOwner = await contract.owner();
-                    const { status, data } = await axios.get(token);
+                    if (address == account) {
+                        const { isListed, price } = await marketplaceContract.listedItemStatus(contract.address, tokenId);
+                        const token = await contract.tokenURI(tokenId);
+                        const collectionOwner = await contract.owner();
+                        const { status, data } = await axios.get(token);
 
-                    if (status === 200) {
-                        tokenArr.push({
-                            ...data,
-                            collectionName,
-                            isListed,
-                            price: parseBalance(price, 18, 2),
-                            collectionIndex: allCollections[index].index,
-                            itemAddress: contract.address,
-                            collectionOwner,
-                            tokenId
-                        });
+                        if (status === 200) {
+                            tokenArr.push({
+                                ...data,
+                                collectionName,
+                                isListed,
+                                price: price.toString(),
+                                collectionIndex: allCollections[index].index,
+                                itemAddress: contract.address,
+                                collectionOwner,
+                                tokenId
+                            });
+                        }
                     }
                 }
             }
-        }
 
-        setTokens(tokenArr);
+            setTokens(tokenArr);
+        } catch (err) {
+            console.log(err.message);
+        }
         setLoading(false);
     }
 
@@ -104,7 +110,6 @@ const Profile = () => {
                     { value: ethers.utils.parseEther('0.02') })
                 ).wait();
 
-                await fetchAllCollections(account);
                 await fetchTokens();
             } catch (error) {
                 toastr.error(error.message);
@@ -113,12 +118,23 @@ const Profile = () => {
         }
     }
 
+    const withdrawFees = async () => {
+        try {
+            setLoading(true);
+            await (await marketplaceContract.withrawFee()).wait();
+        } catch (err) {
+            toastr.error(err.message);
+        }
+        setLoading(false);
+    }
+
     const handlePriceChange = (e, index) => {
-        tokens[index].price = e.target.value;
+        tokens[index].price = e.target.value.toString();
         setTokens([...tokens]);
     }
 
     const cancelSell = async () => {
+        //TODO..
     }
 
     return (
@@ -126,6 +142,9 @@ const Profile = () => {
             {isLoading ? <CircularProgress className="position-center" style={{ left: '50%' }} /> : ''}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <h1>Profile</h1>
+                {
+                    account === contractOwner ? <Button variant="contained" style={{ position: 'fixed', right: '0%', margin: '2%' }} onClick={withdrawFees}>Withdraw</Button > : ''
+                }
             </div>
             <div style={{ display: 'flex', flexFlow: 'row wrap' }}>
                 {tokens.map((token, index) => {
@@ -139,12 +158,17 @@ const Profile = () => {
                                 owner={account}
                                 collectionName={token.collectionName}
                                 collectionAddress={token.itemAddress}
+                                collectionOwner={token.collectionOwner}
+                                collectionIndex={token.collectionIndex}
+                                price={token.price}
+                                tokenId={token.tokenId}
+                                isListed={token.isListed}
                             />
                             <TextField
                                 disabled={token.isListed}
                                 style={{ marginLeft: '20px', width: '155px' }}
                                 onChange={(e) => handlePriceChange(e, index)}
-                                value={token.price}
+                                value={token.isListed ? parseBalance(token.price ?? 0) : token.price}
                                 type="number"
                                 id="eth-price"
                                 label="Price ETH"
@@ -152,7 +176,7 @@ const Profile = () => {
                             />
                             {
                                 token.isListed ?
-                                    <Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={cancelSell} variant="outlined">Cancel Sell</Button> :
+                                    <Button style={{ marginLeft: '20px' }} disabled variant="outlined">Item listed</Button> :
                                     <Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => sellItem(e, index)} variant="outlined">Sell</Button>
                             }
                         </div>)

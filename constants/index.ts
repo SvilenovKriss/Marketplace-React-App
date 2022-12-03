@@ -12,4 +12,4 @@ export const walletConnectSupportedNetworks: Networks = {
 export const supportedMetamaskNetworks = [1, 3, 4, 5, 42];
 
 export const ALBT_TOKEN_ADDRESS = "0xc6869a93ef55e1d8ec8fdcda89c9d93616cf0a72";
-export const MARKETPLACE_ADDRESS = "0x3D8bC985Ed3194Fe20A41aDA478Ace5E69DeCA08";
+export const MARKETPLACE_ADDRESS = "0x5C2B7a7Fc884f0cDE7dff648144898b0CE919D39";

@@ -1,75 +1,76 @@
 import { useEffect, useState } from "react";
-import { useWeb3React } from "@web3-react/core";
 import axios from "axios";
-import { CircularProgress, Button } from '@mui/material';
-import toastr from 'toastr';
+import { CircularProgress } from '@mui/material';
 import { useRouter } from 'next/router'
-import { Contract } from "@ethersproject/contracts";
 
 import NFTLayout from "../../components/NFTLayout";
 import { MARKETPLACE_ADDRESS } from "../../constants";
 import useMarketplaceContract from "../../hooks/useMarketplaceContract";
 import useUserCollections from "../../hooks/useUserCollections";
 import { NFTMetadata } from "../../types/Interfaces";
-import NFT_ABI from "../../contracts/NFT.json";
-import { parseBalance } from "../../util";
-import useFetchTokens from "../../hooks/useFetchTokens";
 
 const UserPage = () => {
-    const { library, account } = useWeb3React();
     const marketplaceContract = useMarketplaceContract(MARKETPLACE_ADDRESS);
     const { isCollectionsFetched, allCollections, fetchAllCollections } = useUserCollections();
     const router = useRouter();
     const { userAddress } = router.query;
     const [tokens, setTokens] = useState<NFTMetadata[]>([]);
     const [isLoading, setLoading] = useState(false);
-    const { fetchTokens } = useFetchTokens();
 
     useEffect(() => {
         setLoading(true);
 
         const fetch = async () => {
             await fetchAllCollections(userAddress);
-            const res = await fetchTokens(allCollections, userAddress);
-
-            if (res?.length > 0) {
-                setTokens(res);
-                setLoading(false);
-            }
-
+            await fetchTokens();
         }
 
         fetch();
+
     }, [isCollectionsFetched]);
 
-    const buyToken = async (e, itemIndex) => {
-        const { price, owner, tokenId, itemAddress } = tokens[itemIndex];
-
+    const fetchTokens = async () => {
         try {
-            setLoading(true);
+            const tokenArr = [];
 
-            let externalTokenIndex = 0;
+            for (let i = 0; i < allCollections.length; i++) {
+                setLoading(true);
+                const contract = await allCollections[i].collection;
+                const collectionName = allCollections[i].name;
+                const tokensLength = (await contract.tokenId())?.toString();
 
-            if (account != owner) {
-                const totalExternalTokens = await marketplaceContract.getTotalBoughtTokens(owner);
+                for (let tokenId = 1; tokenId <= tokensLength; tokenId++) {
+                    const address = await contract.ownerOf(tokenId);
 
-                for (let i = 0; i < totalExternalTokens; i++) {
-                    const externalToken = await marketplaceContract?.userBoughtTokens(owner, i);
+                    if (address == userAddress) {
+                        const { isListed, price } = await marketplaceContract.listedItemStatus(contract.address, tokenId);
+                        const token = await contract.tokenURI(tokenId);
+                        const owner = await contract.ownerOf(tokenId);
+                        const collectionOwner = await contract.owner();
+                        const { status, data } = await axios.get(token);
 
-                    if (externalToken.tokenId.toString() == tokenId && externalToken.collectionAddress == itemAddress) {
-                        externalTokenIndex = i;
-                        break;
+                        if (status === 200) {
+                            tokenArr.push({
+                                ...data,
+                                collectionName,
+                                isListed,
+                                price: price.toString(),
+                                collectionIndex: allCollections[i].index,
+                                itemAddress: contract.address,
+                                collectionOwner,
+                                owner,
+                                tokenId
+                            });
+                        }
                     }
                 }
             }
 
-            await (await marketplaceContract.buyItem(itemIndex, externalTokenIndex, { value: price })).wait();
-            await fetchAllCollections(userAddress);
-
-            setLoading(false);
-        } catch (error) {
-            toastr.error(error.message);
+            setTokens(tokenArr);
+        } catch (err) {
+            console.log(err.message);
         }
+        setLoading(false);
     }
 
     return (
@@ -81,7 +82,7 @@ const UserPage = () => {
             <div style={{ display: 'flex', flexFlow: 'row wrap' }}>
                 {tokens.map((token, index) => {
                     return (
-                        <div style={{ cursor: 'pointer' }} key={index + 1}>
+                        <div key={index + 1}>
                             <NFTLayout
                                 src={token.image}
                                 key={index}
@@ -90,20 +91,13 @@ const UserPage = () => {
                                 owner={token.owner}
                                 collectionName={token.collectionName}
                                 collectionAddress={token.itemAddress}
+                                collectionOwner={token.collectionOwner}
+                                collectionIndex={token.collectionIndex}
+                                itemIndex={token.itemIndex}
+                                price={token.price}
+                                tokenId={token.tokenId}
+                                isListed={token.isListed}
                             />
-                            {
-                                token.isListed ?
-                                    token.owner === account ?
-                                        <div className="d-flex-space-between">
-                                            <Button style={{ marginLeft: '20px' }} disabled onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
-                                            <span style={{ marginRight: '20px' }}>Price: {parseBalance(token.price, 18, 2)}</span>
-                                        </div> :
-                                        <div className="d-flex-space-between">
-                                            <Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
-                                            <span style={{ marginRight: '20px' }}>Price: {parseBalance(token.price, 18, 2)}</span>
-                                        </div>
-                                    : ''
-                            }
                         </div>)
                 })}
             </div>

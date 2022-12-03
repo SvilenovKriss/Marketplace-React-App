@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useWeb3React } from "@web3-react/core";
 import {
     Box,
@@ -12,12 +13,14 @@ import {
 import { useRouter } from 'next/router'
 import Head from "next/head";
 
+import useMarketplaceContract from "../hooks/useMarketplaceContract";
+import { MARKETPLACE_ADDRESS } from "../constants";
 import Account from "../components/Account";
 import useEagerConnect from "../hooks/useEagerConnect";
 
 const navItems = [{ key: 'home', label: 'Home' }, { key: 'mint', label: 'Mint' }, { key: 'collection', label: 'Collection' }, { key: 'profile', label: 'Profile' }];
 
-function Home() {
+function Navbar() {
     const router = useRouter();
     const { account, library } = useWeb3React();
     const triedToEagerConnect = useEagerConnect();
@@ -81,4 +84,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default Navbar;

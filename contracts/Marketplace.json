@@ -12,17 +12,6 @@
     {
         "inputs": [
             {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            }
-        ],
-        "name": "CannotOfferToListedItem",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "address",
                 "name": "collectionOwner",
                 "type": "address"
@@ -549,11 +538,6 @@
             {
                 "internalType": "uint256",
                 "name": "price",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "index",
                 "type": "uint256"
             }
         ],

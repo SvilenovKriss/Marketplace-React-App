@@ -26,7 +26,7 @@ const Home = () => {
         }
 
         fetch();
-    }, []);
+    }, [account]);
 
     const fetchListedItems = async () => {
         try {
@@ -35,7 +35,7 @@ const Home = () => {
             for (let index = 0; index < totalListed; index++) {
                 const { collectionAddress, tokenId, price } = await marketplaceContract.listedItems(index);
                 const contract = new Contract(collectionAddress, NFT_ABI, library.getSigner(account));
-                
+
                 const token = await contract.tokenURI(tokenId);
                 const collectionName = await contract.name();
                 const collectionOwner = await contract.owner();
@@ -99,40 +99,55 @@ const Home = () => {
     return (
         <>
             {isLoading ? <CircularProgress className="position-center" style={{ left: '50%' }} /> : ''}
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h1>Home</h1>
-            </div>
-            <div style={{ display: 'flex', flexFlow: 'row wrap' }}>
-                {tokens.map((token, index) => {
-                    return (
-                        <div key={index + 1}>
-                            <NFTLayout
-                                src={token.image}
-                                key={index}
-                                name={token.name}
-                                description={token.description}
-                                owner={token.owner}
-                                collectionName={token.collectionName}
-                                collectionAddress={token.itemAddress}
-                                collectionOwner={token.collectionOwner}
-                                collectionIndex={token.collectionIndex}
-                                itemIndex={token.itemIndex}
-                                price={token.price}
-                                tokenId={token.tokenId}
-                                isListed={token.isListed}
-                            />
-                            {
-                                account !== token.owner ?
-                                    <div className="d-flex-space-between">
-                                        < Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
-                                        <span style={{ marginRight: '20px' }}>Price: {token.price ? parseBalance(token.price) : ''}</span>
-                                    </div>
-                                    : ''
-                            }
+            {
+                account?.length > 0 ?
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <h1>Home</h1>
                         </div>
-                    )
-                })}
-            </div>
+                        <div style={{ display: 'flex', flexFlow: 'row wrap' }}>
+                            {tokens.map((token, index) => {
+                                return (
+                                    <div key={index + 1}>
+                                        <NFTLayout
+                                            src={token.image}
+                                            key={index}
+                                            name={token.name}
+                                            description={token.description}
+                                            owner={token.owner}
+                                            collectionName={token.collectionName}
+                                            collectionAddress={token.itemAddress}
+                                            collectionOwner={token.collectionOwner}
+                                            collectionIndex={token.collectionIndex}
+                                            itemIndex={token.itemIndex}
+                                            price={token.price}
+                                            tokenId={token.tokenId}
+                                            isListed={token.isListed}
+                                        />
+                                        {
+                                            account !== token.owner ?
+                                                <div className="d-flex-space-between">
+                                                    < Button style={{ marginLeft: '20px' }} disabled={isLoading} onClick={(e) => buyToken(e, index)} variant="outlined">Buy</Button>
+                                                    <span style={{ marginRight: '20px' }}>Price: {token.price ? parseBalance(token.price) : ''}</span>
+                                                </div>
+                                                : ''
+                                        }
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                    :
+                    <div className="d-flex-center-column">
+                        <h1>This is NFT Market Place</h1>
+                        <div className="d-flex">
+                            <h3>You can use this marketplace to create, buy & sell NFTs.</h3>
+                        </div>
+                        <div className="d-flex">
+                            <h3>Please connect to your Wallet!</h3>
+                        </div>
+                    </div>
+            }
         </>
     )
 }

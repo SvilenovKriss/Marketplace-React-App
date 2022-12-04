@@ -1,3 +1,15 @@
+# NFT Marketplace React app
+
+NFT Marketplace where you can create collections, mint nfts, sell or buy and make offers to other NFTs.
+
+# Installation
+
+Install dependencies
+
+```shell
+npm install
+```
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmirshko%2Fnext-web3-boilerplate)
 
 This is a default [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app), customized as the default boilerplate for new Web3 projects.
@@ -38,8 +50,6 @@ yarn dev
 ```
 
 Open [http://localhost:4001](http://localhost:4001) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
 ## Learn More
 
